@@ -1,12 +1,19 @@
 <h2>Dashboard Screen (WIP)</h2>
 <h1 id="userNameDisplay">{{username}}</h1>
-<div class="userSummary">
-  <p id="capital">Capital: {{capital}}</p>
-  <p id="portfolio_worth">Portfolio Worth: {{portfolio_worth}}</p> 
-  <form id="recomputePorfolioWorthForm">
-  <button type="button" id="recomputePortfolioWorth">Recompute Portfolio Worth</button>
-  </form>
+<div class="containerSummary">
+    <div class="userSummary">
+        <h2 id="capital">Capital: {{capital}}</h2>
+        <h2 id="portfolio_worth">Portfolio Worth: {{portfolio_worth}}</h2> 
+        <form id="recomputePorfolioWorthForm">
+            <button type="button" id="recomputePortfolioWorth">Recompute Portfolio Worth</button>
+        </form>
+    </div>
+
+    <div class="chartArea">
+        <div id="portfolio-chart" userId="{{userId}}"></div>
+    </div>
 </div>
+
 <div class="tickersAndHistory">
     <table class="tickers">
         <caption>Tickers Held</caption>

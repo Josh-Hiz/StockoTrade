@@ -423,40 +423,89 @@ a:hover {
 .searchBar {
 	width: 100%;
 	padding: 12px 20px;
-	margin: 0 0;
+	margin: 0px 0px;
 	display: inline-block;
 	border: 2px solid #7aa843;
 	border-radius: 5px;
 	box-sizing: border-box;
-  }
-  .tickersAndHistory {
-  display: flex;
-  gap: 32px;
-  margin-top: 16px;
-  flex-wrap: wrap;
+}
+  	.tickersAndHistory {
+  	display: flex;
+  	gap: 32px;
+  	margin-top: 16px;
+  	flex-wrap: wrap;
 }
 
 table {
-  border-collapse: collapse;
-  width: 100%;
-  max-width: 500px;
+  	border-collapse: collapse;
+  	width: 100%;
+  	max-width: 500px;
 }
 
 table caption {
-  font-weight: bold;
-  margin-bottom: 8px;
+  	font-weight: bold;
+  	margin-bottom: 8px;
 }
 
 th, td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
+  	border: 1px solid #ddd;
+  	padding: 8px;
+  	text-align: left;
 }
 
 th {
-  background-color: #f0f0f0;
+  	background-color: #f0f0f0;
+}
+.containerSummary {
+  	display: flex;
+  	justify-content: space-between;
+  	align-items: flex-start;
+  	flex-wrap: wrap;
+  	gap: 20px;
 }
 
+.userSummary {
+  	flex: 0px 0px auto;
+  	min-width: 200px;
+}
+
+.chartArea {
+  	display: flex;
+  	flex-wrap: wrap;
+  	gap: 10px;
+  	justify-content: center;
+  	align-items: flex-start;
+}
+
+#portfolio-chart{
+  	width: 400px;
+  	height: 300px;
+}
 .summary {
-  margin-bottom: 16px;
+  	margin-bottom: 16px;
+}
+
+.portfolio-svg {
+  	background-color: #f9f9f9;
+}
+
+.chart-group {
+  	font-size: 12px;
+}
+
+.x-axis path,
+.y-axis path,
+.x-axis line,
+.y-axis line {
+  	stroke: #ccc;
+}
+
+.portfolio-area {
+	fill: rgb(0, 255, 13);
+	opacity: 0.5;
+}
+.portfolio-line {
+  	fill: none;
+  	stroke: rgb(70, 180, 112);
+  	stroke-width: 2px;
 }

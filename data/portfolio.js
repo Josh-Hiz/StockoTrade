@@ -3,8 +3,9 @@ yahooFinance.suppressNotices(['yahooSurvey']) //I gave you your survey, stop sen
 
 import { ObjectId } from 'mongodb';
 import { users } from '../config/mongodb/mongoCollections.js';
-import { verifyStockAndUserPartial } from '../utils/auth/user_data.js';
+import { verifyStockAndUserPartial, verifyId} from '../utils/auth/user_data.js';
 
+//volume must be inputted as a string
 const buyStock = async (userId, stock_ticker, volume) => {
 	const [verifiedUserId, verifiedStock_Ticker, verifiedVolume] = verifyStockAndUserPartial(userId, stock_ticker, volume)
 	const userCollection = await users();
@@ -50,6 +51,8 @@ const buyStock = async (userId, stock_ticker, volume) => {
 	return updatedInfo
 	
 }
+
+//volume must be inputted as a string
 const sellStock = async(userId, stock_ticker, volume) => {
 	const [verifiedUserId, verifiedStock_Ticker, verifiedVolume] = verifyStockAndUserPartial(userId, stock_ticker, volume)
 	const userCollection = await users();
@@ -98,6 +101,93 @@ const sellStock = async(userId, stock_ticker, volume) => {
 	return updatedInfo
 
 }
+
+async function getPortfolioWorthOverTime(userId) {
+	const verifiedUserId = verifyId(userId)
+	const userCollection = await users();
+	const userToInspect = await userCollection.findOne({
+			_id: new ObjectId(verifiedUserId)
+	})	
+  	let cash = 100000; //inital amount of money user starts with, is set to 100000 currently
+  	const tradeHistory = userToInspect.portfolio_information.trade_history;
+  	const tickers = [...new Set(tradeHistory.map(t => t.stock_ticker))];
+  	const sortedTrades = [...tradeHistory].sort((a, b) => new Date(a.date) - new Date(b.date)); //need to reverse array since it is stored newest first
+
+  	//getiing full date range from first to last trade
+  	const startDate = new Date(sortedTrades[0].date);
+  	const endDate = new Date();
+  	const dateList = [];
+  	for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+		dateList.push(new Date(d).toISOString().split('T')[0]);
+  	}
+
+  	//getting price history for each ticker
+  	const tickerPrices = {};
+  	for (const ticker of tickers) {
+    	const history = await yahooFinance.chart(ticker, {
+		period1: dateList[0], //first buy
+		interval: '1d',
+      	//range: '1y', in case we want to restrict it to only 1y or other metric, leaving unlimited for now
+	});
+    	tickerPrices[ticker] = {};
+    	for (const { date, close } of history.quotes) {
+      		const d = new Date(date).toISOString().split('T')[0];
+      		tickerPrices[ticker][d] = close;
+		}
+  	}
+  	const result = [];
+  	const holdings = {};  //{ticker: shares}
+  	let tradeIndex = 0;
+	const lastKnownPrices = {};
+
+	//main loop for calculating value
+  	for (const date of dateList) {
+		while (tradeIndex < sortedTrades.length && new Date(sortedTrades[tradeIndex].date).toISOString().split('T')[0] === date) {
+			const trade = sortedTrades[tradeIndex];
+			const price = tickerPrices[trade.stock_ticker]?.[date];
+			if (price !== undefined) {
+				const volume = trade.volume;
+				const cost = price * volume;
+				if (trade.type === 'Buy') {
+					if (cash >= cost) {
+						holdings[trade.stock_ticker] = (holdings[trade.stock_ticker] || 0) + volume;
+						cash -= cost;
+					}
+				} else if (trade.type === 'Sell') {
+					holdings[trade.stock_ticker] = (holdings[trade.stock_ticker] || 0) - volume;
+					cash += cost;
+				}
+			}
+			tradeIndex++;
+		}
+
+    	//calculating portfolio value
+    	let investedValue = 0;
+		for (const [ticker, volume] of Object.entries(holdings)) {
+  			if (volume <= 0) continue;
+
+  			const priceToday = tickerPrices[ticker]?.[date];
+  			if (priceToday !== undefined) {
+				lastKnownPrices[ticker] = priceToday;
+  			}
+
+ 			const priceToUse = lastKnownPrices[ticker];
+  			if (priceToUse !== undefined) {
+				investedValue += volume * priceToUse;
+  			}
+		}
+
+		result.push({
+			date,
+			//both under can be used, but no purpose for them anymore
+      		investedValue: parseFloat(investedValue.toFixed(4)),
+			cash: parseFloat(cash.toFixed(4)),
+			totalValue: parseFloat((cash + investedValue).toFixed(4))
+    	});
+  	}
+  	return result;
+}
+
 const getTopPortfolioProfiles = async () => {
 	const usersCollection = await users();
 	let topProfiles = await usersCollection
@@ -126,6 +216,6 @@ const getTopPortfolioProfiles = async () => {
 
 console.log(await getTopPortfolioProfiles());
 
-const portfolioDataFunctions = { getTopPortfolioProfiles, buyStock, sellStock};
+const portfolioDataFunctions = { getTopPortfolioProfiles, buyStock, sellStock, getPortfolioWorthOverTime};
 
 export default portfolioDataFunctions;

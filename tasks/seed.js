@@ -15,13 +15,14 @@ const Tid = Tanav._id.toString();
 const Cid = Chris._id.toString();
 const Mid = Mylo._id.toString()
 
+//will add way to add and buy stocks in the past for development not user use prob
 // Populate each accounts portfolio information, (use the portfolio functions)
 await portfolioData.buyStock(Tid, "AAPL", "12")
 await portfolioData.sellStock(Tid, "AAPL", "4")
 await portfolioData.sellStock(Tid, "AAPL", "8")
 await portfolioData.buyStock(Tid, "DOMO", "107")
 await portfolioData.buyStock(Tid, "AAPL", "6")
-await portfolioData.buyStock(Tid, "HYMCL", "10703")
+await portfolioData.buyStock(Tid, "ASST", "200")
 await portfolioData.buyStock(Tid, "TPIF", "19")
 await portfolioData.sellStock(Tid, "HYMCL", "200")
 
